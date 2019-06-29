@@ -60,7 +60,7 @@ module.exports = (server) => {
                                     }
                                 })
                                     .then(user => {
-                                        console.log("match user "+user);
+                                        console.log("match user " + user);
                                         for(let i=0; i<user.length; ++i){
                                             let name = (user[i].first_name).concat(user[i].last_name)
                                             usr.push({
@@ -70,7 +70,7 @@ module.exports = (server) => {
                                         }
                                     })
                                     .then(()=>{
-                                        console.log(usr);
+                                        console.log("return usr" + usr);
                                         io.to(`${data.roomid}`).emit('players', usr);
                                     })   
                             }else{
@@ -158,8 +158,9 @@ module.exports = (server) => {
                 id: data.userid,
                 step: data.step
             }
-            socket.to(`${data.roomid}`).emit('update', broadCastToPlayer); // except sender
-            // io.to(`${data.roomid}`).emit('update', broadCastToPlayer); // include sender
+            console.log(broadCastToPlayer);
+            // socket.to(`${data.roomid}`).emit('update', broadCastToPlayer); // except sender
+            io.in(`${data.roomid}`).emit('update', broadCastToPlayer); // include sender
         })
         socket.on('start', data=>{
             Room.findOne({

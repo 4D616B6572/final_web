@@ -15,6 +15,7 @@ const HomePage = require('./routes/HomePage')
 
 app.use('/users', Users);
 app.use('/', HomePage);
+app.use(express.static('public'));
 
 
 // app.listen(port, ()=>{

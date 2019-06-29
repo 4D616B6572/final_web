@@ -10,6 +10,7 @@ const numOfHighScoreUser = 5;
 homePage.use(cors());
 
 homePage.get('/rooms', (req, res)=>{
+    console.log("get /rooms api is called");
     //let headerInFo = req.headers; // if anything needs to transmit to backend
     Room.findAll({
         where: sequelize.where(sequelize.fn('array_length', sequelize.col('playerid'), 1), 3) // three players in a room is full 
@@ -47,6 +48,8 @@ homePage.get('/rooms', (req, res)=>{
 })
 
 homePage.get('/highScore', (req, res)=>{
+    console.log("get /highScore api is called");
+
     User.findAll({
         where:{
             score:{[Op.gt]: 0}
@@ -99,6 +102,21 @@ homePage.post('/rooms', (req, res)=>{
 })
 
 homePage.post('/record', (req, res)=>{
+    // User.findAll({
+    //     where:{
+    //         score:{[Op.gt]: 0}
+    //     }
+    // })
+    // .then(user=>{
+    //     for(let i=0; i<user.length; ++i){
+    //         user[i].update({score: (Math.floor(Math.random() * 10) + 1)*10000})
+    //     }
+    //     res.send("succeed");
+    // })
+    // .catch(err=>{
+    //     console.log(err);
+    // })
+
     User.findOne({
         where:{
             id: req.headers.id
