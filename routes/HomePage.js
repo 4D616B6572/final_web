@@ -54,7 +54,8 @@ homePage.get('/highScore', (req, res)=>{
     })
     .then(highScoreUser=>{
         let userWillReturn = highScoreUser.sort((a,b)=>{
-            return b.score - a.score; // largest one to smallest one
+            // return b.score - a.score; // largest one to smallest one
+            return a.score - b.score; // small to high
         })
         let usr = [];
         for(let i=0; i<userWillReturn.length; ++i){
@@ -65,12 +66,12 @@ homePage.get('/highScore', (req, res)=>{
                 score: userWillReturn[i].score
             })
         }
-        console.log(usr);
+        // console.log(usr);
 
         if(usr.length > numOfHighScoreUser){
-            let lastHighScore = usr[numOfHighScoreUser-1].score;
+            let lastAvailableScore = usr[numOfHighScoreUser-1].score;
             let user = usr.filter(element=>{
-                return element.score >= lastHighScore
+                return element.score <= lastAvailableScore
             })
             res.send(user);
         }else{
