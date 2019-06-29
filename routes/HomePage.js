@@ -87,6 +87,7 @@ homePage.get('/highScore', (req, res)=>{
 })
 
 homePage.post('/rooms', (req, res)=>{
+    let io = req.app.get('socketio')
     let roomInFo ={
         name: req.body.roomName,
         active: false,
@@ -94,11 +95,16 @@ homePage.post('/rooms', (req, res)=>{
     }
     Room.create(roomInFo)
     .then(newRoom=>{
+        io.in('home').emit('update_rooms', {
+            primary_k: newRoom.id,
+            name: req.body.roomName,
+            player_num: newRoom.playerid.length
+        })
         res.send({roomid: newRoom.id});
     })
     .catch(err=>{
         console.log(err); 
-    }) 
+    })
 })
 
 homePage.post('/record', (req, res)=>{

@@ -1,15 +1,19 @@
 const ioLib = require('socket.io');
-// const app = require('./server');
 const Room = require('./models/Room')
 const User = require('./models/User')
 const sequelize = require('sequelize');
+// const app = require('./server');
 const Op = sequelize.Op
 
-
-module.exports = (server) => {
+module.exports = (server, app) => {
     io = ioLib(server);
-    // app.set('socketio', io);
+    app.set('socketio', io);
     io.on('connection', socket => {
+        /*******************************************************************
+         * 
+         *                      socket for Room
+         * 
+         *******************************************************************/
         socket.on('reqRoomInfo', data=>{
             Room.findOne({
                 where:{
@@ -71,7 +75,12 @@ module.exports = (server) => {
                                     })
                                     .then(()=>{
                                         console.log("return usr" + usr);
-                                        io.to(`${data.roomid}`).emit('players', usr);
+                                        io.in(`${data.roomid}`).emit('players', usr);
+                                        io.in('home').emit('update_rooms', {
+                                            primary_k: room.id,
+                                            name: room.name,
+                                            player_num: usr.length
+                                        })
                                     })   
                             }else{
                                 socket.emit('kickout');
@@ -90,6 +99,7 @@ module.exports = (server) => {
             socket.leave(`${data.roomid}`, () => {
                 let user = [];
                 let usr = [];
+                let roomName;
                 let room = Object.keys(socket.rooms);
                 console.log(room);
                 Room.findOne({
@@ -106,6 +116,7 @@ module.exports = (server) => {
                         console.log(needToDelete[0]);
                         user.splice(user.indexOf(needToDelete[0]), 1);
                         room.update({playerid: user});
+                        roomName = room.name
                     })
                     .then(() => {
                         console.log("user after leave "+user);
@@ -130,6 +141,11 @@ module.exports = (server) => {
                                 console.log(usr);
                                 io.to(`${data.roomid}`).emit('players', usr); // specific player leave the room 
                                                                               // and need to let the rest of players in the room update the condi of the room
+                                io.in('home').emit('update_rooms', {
+                                    primary_k: data.roomid,
+                                    name: roomName,
+                                    player_num: usr.length
+                                })
                             })
                             .then(()=>{
                                 if(user.length === 0){
@@ -179,6 +195,17 @@ module.exports = (server) => {
             .catch(err=>{
                 console.log(err);
             })
+        })
+         /*******************************************************************
+         * 
+         *                      socket for Home
+         * 
+         *******************************************************************/
+        socket.on('enter_home', ()=>{
+            socket.join('home');
+        })
+        socket.on('leave_home', ()=>{
+            socket.leave('home');
         })
     })
 }
