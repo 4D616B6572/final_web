@@ -76,10 +76,29 @@ module.exports = (server, app) => {
                                     .then(()=>{
                                         console.log("return usr" + usr);
                                         io.in(`${data.roomid}`).emit('players', usr);
-                                        io.in('home').emit('update_rooms', {
-                                            primary_k: room.id,
-                                            name: room.name,
-                                            player_num: usr.length
+                                        // io.in('home').emit('update_rooms', {
+                                        //     primary_k: room.id,
+                                        //     name: room.name,
+                                        //     player_num: usr.length
+                                        // })
+                                        Room.findAll({
+                                            where:{
+                                                id:{[Op.gt]: 0}
+                                            }
+                                        })
+                                        .then(allRoom=>{
+                                            let updateRoom = [];
+                                            allRoom.forEach(ele=>{
+                                                updateRoom.push({
+                                                    primary_k: ele.id,
+                                                    name: ele.name,
+                                                    player_num: ele.playerid.length
+                                                })        
+                                            })
+                                            io.in('home').emit('update_rooms', updateRoom);
+                                        })
+                                        .catch(err=>{
+                                            console.log(err);
                                         })
                                     })   
                             }else{
@@ -99,7 +118,7 @@ module.exports = (server, app) => {
             socket.leave(`${data.roomid}`, () => {
                 let user = [];
                 let usr = [];
-                let roomName;
+                // let roomName;
                 let room = Object.keys(socket.rooms);
                 console.log(room);
                 Room.findOne({
@@ -116,7 +135,7 @@ module.exports = (server, app) => {
                         console.log(needToDelete[0]);
                         user.splice(user.indexOf(needToDelete[0]), 1);
                         room.update({playerid: user});
-                        roomName = room.name
+                        // roomName = room.name
                     })
                     .then(() => {
                         console.log("user after leave "+user);
@@ -141,11 +160,11 @@ module.exports = (server, app) => {
                                 console.log(usr);
                                 io.to(`${data.roomid}`).emit('players', usr); // specific player leave the room 
                                                                               // and need to let the rest of players in the room update the condi of the room
-                                io.in('home').emit('update_rooms', {
-                                    primary_k: data.roomid,
-                                    name: roomName,
-                                    player_num: usr.length
-                                })
+                                // io.in('home').emit('update_rooms', {
+                                //     primary_k: data.roomid,
+                                //     name: roomName,
+                                //     player_num: usr.length
+                                // })
                             })
                             .then(()=>{
                                 if(user.length === 0){
@@ -159,6 +178,26 @@ module.exports = (server, app) => {
                                         room.destroy({force: true});
                                     })
                                 }
+                                
+                                Room.findAll({
+                                    where:{
+                                        id:{[Op.gt]: 0}
+                                    }
+                                })
+                                .then(allRoom=>{
+                                    let updateRoom = [];
+                                    allRoom.forEach(ele=>{
+                                        updateRoom.push({
+                                            primary_k: ele.id,
+                                            name: ele.name,
+                                            player_num: ele.playerid.length
+                                        })        
+                                    })
+                                    io.in('home').emit('update_rooms', updateRoom);
+                                })
+                                .catch(err=>{
+                                    console.log(err);
+                                })
                             })
                             .catch(err=>{
                                 console.log(err);

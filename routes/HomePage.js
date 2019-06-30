@@ -87,7 +87,7 @@ homePage.get('/highScore', (req, res)=>{
 })
 
 homePage.post('/rooms', (req, res)=>{
-    let io = req.app.get('socketio')
+    let io = req.app.get('socketio') // use socket io in api
     let roomInFo ={
         name: req.body.roomName,
         active: false,
@@ -95,12 +95,33 @@ homePage.post('/rooms', (req, res)=>{
     }
     Room.create(roomInFo)
     .then(newRoom=>{
-        io.in('home').emit('update_rooms', {
-            primary_k: newRoom.id,
-            name: req.body.roomName,
-            player_num: newRoom.playerid.length
-        })
+        // io.in('home').emit('update_rooms', {
+        //     primary_k: newRoom.id,
+        //     name: req.body.roomName,
+        //     player_num: newRoom.playerid.length
+        // })
         res.send({roomid: newRoom.id});
+    })
+    .then(()=>{
+        Room.findAll({
+            where:{
+                id:{[Op.gt]: 0}
+            }
+        })
+        .then(allRoom=>{
+            let updateRoom = [];
+            allRoom.forEach(ele=>{
+                updateRoom.push({
+                    primary_k: ele.id,
+                    name: ele.name,
+                    player_num: ele.playerid.length
+                })        
+            })
+            io.in('home').emit('update_rooms', updateRoom);
+        })
+        .catch(err=>{
+            console.log(err);
+        })
     })
     .catch(err=>{
         console.log(err); 
