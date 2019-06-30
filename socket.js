@@ -91,11 +91,13 @@ module.exports = (server, app) => {
                                         .then(allRoom=>{
                                             let updateRoom = [];
                                             allRoom.forEach(ele=>{
-                                                updateRoom.push({
-                                                    primary_k: ele.id,
-                                                    name: ele.name,
-                                                    player_num: ele.playerid.length
-                                                })        
+                                                if(!ele.active){
+                                                    updateRoom.push({
+                                                        primary_k: ele.id,
+                                                        name: ele.name,
+                                                        player_num: ele.playerid.length
+                                                    })      
+                                                }  
                                             })
                                             io.in('home').emit('update_rooms', updateRoom);
                                         })
@@ -189,11 +191,13 @@ module.exports = (server, app) => {
                         .then(allRoom=>{
                             let updateRoom = [];
                             allRoom.forEach(ele=>{
-                                updateRoom.push({
-                                    primary_k: ele.id,
-                                    name: ele.name,
-                                    player_num: ele.playerid.length
-                                })        
+                                if(!ele.active){
+                                    updateRoom.push({
+                                        primary_k: ele.id,
+                                        name: ele.name,
+                                        player_num: ele.playerid.length
+                                    })   
+                                }     
                             })
                             io.in('home').emit('update_rooms', updateRoom);
                         })
