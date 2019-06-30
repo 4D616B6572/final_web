@@ -155,30 +155,30 @@ module.exports = (server, app) => {
                                     }
                                 })
                                 .then(room=>{
-                                    room.destroy({force: true});
-                                })
-                                .then(()=>{
-                                    Room.findAll({
-                                        where:{
-                                            id:{[Op.gt]: 0}
-                                        }
-                                    })
-                                    .then(allRoom=>{
-                                        let updateRoom = [];
-                                        allRoom.forEach(ele=>{
-                                            if(!ele.active){
-                                                updateRoom.push({
-                                                    primary_k: ele.id,
-                                                    name: ele.name,
-                                                    player_num: ele.playerid.length
-                                                })   
-                                            }     
+                                    room.destroy({force: true})
+                                    .then(()=>{
+                                        Room.findAll({
+                                            where:{
+                                                id:{[Op.gt]: 0}
+                                            }
                                         })
-                                        io.in('home').emit('update_rooms', updateRoom);
+                                        .then(allRoom=>{
+                                            let updateRoom = [];
+                                            allRoom.forEach(ele=>{
+                                                if(!ele.active){
+                                                    updateRoom.push({
+                                                        primary_k: ele.id,
+                                                        name: ele.name,
+                                                        player_num: ele.playerid.length
+                                                    })   
+                                                }     
+                                            })
+                                            io.in('home').emit('update_rooms', updateRoom);
+                                        })
+                                        .catch(err=>{
+                                            console.log(err);
+                                        });        
                                     })
-                                    .catch(err=>{
-                                        console.log(err);
-                                    });        
                                 })
                                 .catch(err=>{console.log(err)});  
                             }else{
