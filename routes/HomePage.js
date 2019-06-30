@@ -153,7 +153,14 @@ homePage.post('/record', (req, res)=>{
         }
     })
     .then(user=>{
-        user.update({score: req.body.score})
+        let newScore;
+        if(user.score > 0 && user.score > req.body.score){
+            newScore = req.body.score;
+        }else{
+            newScore = user.score;
+        }
+
+        user.update({score: newScore})
         .then(()=>{
             Room.findOne({
                 where:{
