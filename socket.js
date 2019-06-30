@@ -54,60 +54,63 @@ module.exports = (server, app) => {
                             let UserNotInRoom = (!specific_usr.length)?true:false;
                             if(room.active == false && UserNotInRoom){
                                 (room.playerid).push(data.userid);
-                                room.update({playerid: room.playerid});
-                                console.log("room.playerid "+room.playerid);
-                                User.findAll({
-                                    where: {
-                                        id: {
-                                            [Op.or]: [...room.playerid]
-                                        }
-                                    }
-                                })
-                                    .then(user => {
-                                        console.log("match user " + user);
-                                        for(let i=0; i<user.length; ++i){
-                                            let name = (user[i].first_name).concat(user[i].last_name)
-                                            usr.push({
-                                                id: user[i].id,
-                                                name: name
-                                            })
+                                room.update({playerid: room.playerid})
+                                .then(()=>{
+                                    console.log("room.playerid "+room.playerid);
+                                    User.findAll({
+                                        where: {
+                                            id: {
+                                                [Op.or]: [...room.playerid]
+                                            }
                                         }
                                     })
-                                    .then(()=>{
-                                        console.log("return usr" + usr);
-                                        io.in(`${data.roomid}`).emit('players', usr);
-                                        // io.in('home').emit('update_rooms', {
-                                        //     primary_k: room.id,
-                                        //     name: room.name,
-                                        //     player_num: usr.length
-                                        // })
-                                    })   
-                                    .then(()=>{
-                                        Room.findAll({
-                                            where:{
-                                                id:{[Op.gt]: 0}
+                                        .then(user => {
+                                            console.log("match user " + user);
+                                            for(let i=0; i<user.length; ++i){
+                                                let name = (user[i].first_name).concat(user[i].last_name)
+                                                usr.push({
+                                                    id: user[i].id,
+                                                    name: name
+                                                })
                                             }
                                         })
-                                        .then(allRoom=>{
-                                            let updateRoom = [];
-                                            allRoom.forEach(ele=>{
-                                                if(!ele.active){
-                                                    updateRoom.push({
-                                                        primary_k: ele.id,
-                                                        name: ele.name,
-                                                        player_num: ele.playerid.length
-                                                    })      
-                                                }  
+                                        .then(()=>{
+                                            console.log("return usr" + usr);
+                                            io.in(`${data.roomid}`).emit('players', usr);
+                                            // io.in('home').emit('update_rooms', {
+                                            //     primary_k: room.id,
+                                            //     name: room.name,
+                                            //     player_num: usr.length
+                                            // })
+                                        })   
+                                        .then(()=>{
+                                            Room.findAll({
+                                                where:{
+                                                    id:{[Op.gt]: 0}
+                                                }
                                             })
-                                            io.in('home').emit('update_rooms', updateRoom);
+                                            .then(allRoom=>{
+                                                let updateRoom = [];
+                                                allRoom.forEach(ele=>{
+                                                    if(!ele.active){
+                                                        updateRoom.push({
+                                                            primary_k: ele.id,
+                                                            name: ele.name,
+                                                            player_num: ele.playerid.length
+                                                        })      
+                                                    }  
+                                                })
+                                                io.in('home').emit('update_rooms', updateRoom);
+                                            })
+                                            .catch(err=>{
+                                                console.log(err);
+                                            })
                                         })
                                         .catch(err=>{
                                             console.log(err);
                                         })
-                                    })
-                                    .catch(err=>{
-                                        console.log(err);
-                                    })
+                                })
+                                .catch(err=>{console.log(err)});
                             }else{
                                 socket.emit('kickout');
                             }
@@ -225,12 +228,15 @@ module.exports = (server, app) => {
                 }
             })
             .then(room=>{
-                room.update({active: true});
-                console.log("room.id = "+room.id);
-                console.log("inactive the room");
-            })
-            .then(()=>{
-                io.in(`${data.roomid}`).emit('start');
+                room.update({active: true})
+                .then(()=>{
+                    io.in(`${data.roomid}`).emit('start');
+                })
+                .catch(err=>{
+                    console.log(err);
+                })
+                // console.log("room.id = "+room.id);
+                // console.log("inactive the room");
             })
             .catch(err=>{
                 console.log(err);
