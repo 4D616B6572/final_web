@@ -153,21 +153,22 @@ homePage.post('/record', (req, res)=>{
         }
     })
     .then(user=>{
-        user.update({score: req.body.score});
-    })
-    .catch(err=>{
-        console.log(err);
-    })
-
-    Room.findOne({
-        where:{
-            id: req.body.roomid
-        }
-    })
-    .then(room=>{
-        if(room != undefined){
-            room.destroy({force: true});
-        }
+        user.update({score: req.body.score})
+        .then(()=>{
+            Room.findOne({
+                where:{
+                    id: req.body.roomid
+                }
+            })
+            .then(room=>{
+                if(room != undefined){
+                    room.destroy({force: true});
+                }
+            })
+            .catch(err=>{
+                console.log(err);
+            })
+        })
     })
     .catch(err=>{
         console.log(err);
