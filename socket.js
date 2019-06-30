@@ -81,6 +81,8 @@ module.exports = (server, app) => {
                                         //     name: room.name,
                                         //     player_num: usr.length
                                         // })
+                                    })   
+                                    .then(()=>{
                                         Room.findAll({
                                             where:{
                                                 id:{[Op.gt]: 0}
@@ -100,7 +102,10 @@ module.exports = (server, app) => {
                                         .catch(err=>{
                                             console.log(err);
                                         })
-                                    })   
+                                    })
+                                    .catch(err=>{
+                                        console.log(err);
+                                    })
                             }else{
                                 socket.emit('kickout');
                             }
@@ -178,7 +183,8 @@ module.exports = (server, app) => {
                                         room.destroy({force: true});
                                     })
                                 }
-                                
+                            })
+                            .then(()=>{
                                 Room.findAll({
                                     where:{
                                         id:{[Op.gt]: 0}
@@ -197,7 +203,7 @@ module.exports = (server, app) => {
                                 })
                                 .catch(err=>{
                                     console.log(err);
-                                })
+                                });
                             })
                             .catch(err=>{
                                 console.log(err);
