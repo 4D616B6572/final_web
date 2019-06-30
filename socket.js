@@ -144,70 +144,64 @@ module.exports = (server, app) => {
                     })
                     .then(() => {
                         console.log("user after leave "+user);
-                        User.findAll({
-                            where: {
-                                id: {
-                                    [Op.or]: [...user]
+                        if(user.length === 0){
+                            // room.destroy({force: true});
+                            Room.findOne({
+                                where:{
+                                    id: data.roomid
                                 }
-                            }
-                        })
-                            .then(user => {
-                                for(let i=0; i<user.length; ++i){
-                                    let name = (user[i].first_name).concat(user[i].last_name)
-                                    usr.push({
-                                        id: user[i].id,
-                                        name: name
-                                    })
+                            })
+                            .then(room=>{
+                                room.destroy({force: true});
+                            })
+                        }else{
+                            User.findAll({
+                                where: {
+                                    id: {
+                                        [Op.or]: [...user]
+                                    }
                                 }
+                            })
+                                .then(user => {
+                                    for(let i=0; i<user.length; ++i){
+                                        let name = (user[i].first_name).concat(user[i].last_name)
+                                        usr.push({
+                                            id: user[i].id,
+                                            name: name
+                                        })
+                                    }
 
-                            })
-                            .then(()=>{
-                                console.log(usr);
-                                io.to(`${data.roomid}`).emit('players', usr); // specific player leave the room 
-                                                                              // and need to let the rest of players in the room update the condi of the room
-                                // io.in('home').emit('update_rooms', {
-                                //     primary_k: data.roomid,
-                                //     name: roomName,
-                                //     player_num: usr.length
-                                // })
-                            })
-                            .then(()=>{
-                                if(user.length === 0){
-                                    // room.destroy({force: true});
-                                    Room.findOne({
+                                })
+                                .then(()=>{
+                                    console.log(usr);
+                                    io.to(`${data.roomid}`).emit('players', usr); // specific player leave the room 
+                                                                                // and need to let the rest of players in the room update the condi of the room
+                                })
+                                .then(()=>{
+                                    Room.findAll({
                                         where:{
-                                            id: data.roomid
+                                            id:{[Op.gt]: 0}
                                         }
                                     })
-                                    .then(room=>{
-                                        room.destroy({force: true});
+                                    .then(allRoom=>{
+                                        let updateRoom = [];
+                                        allRoom.forEach(ele=>{
+                                            updateRoom.push({
+                                                primary_k: ele.id,
+                                                name: ele.name,
+                                                player_num: ele.playerid.length
+                                            })        
+                                        })
+                                        io.in('home').emit('update_rooms', updateRoom);
                                     })
-                                }
-                            })
-                            .then(()=>{
-                                Room.findAll({
-                                    where:{
-                                        id:{[Op.gt]: 0}
-                                    }
-                                })
-                                .then(allRoom=>{
-                                    let updateRoom = [];
-                                    allRoom.forEach(ele=>{
-                                        updateRoom.push({
-                                            primary_k: ele.id,
-                                            name: ele.name,
-                                            player_num: ele.playerid.length
-                                        })        
-                                    })
-                                    io.in('home').emit('update_rooms', updateRoom);
+                                    .catch(err=>{
+                                        console.log(err);
+                                    });
                                 })
                                 .catch(err=>{
                                     console.log(err);
-                                });
-                            })
-                            .catch(err=>{
-                                console.log(err);
-                            })
+                                })
+                        }
                     })
                     .catch(err=>{
                         console.log(err);
