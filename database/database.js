@@ -5,7 +5,7 @@ const db = {}
 
 
 // for local database testing, need to download PostgreSQL server locally to do that.
-const sequelize = new Sequelize("ryanhu", "ryanhu", null, {
+const sequelize = new Sequelize("ryanhu", "ryanhu", "1234", {
     host: 'localhost',
     dialect: 'postgres',
     operatorsAliases: false, // string based operator v.s symbol based operator
